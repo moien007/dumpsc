@@ -1,46 +1,75 @@
-﻿using System;
+﻿/*
+ * Project : SC Extractor for Clash Royal
+ * Author : Moien007 (https://github.com/moien007)
+ * 
+ * Description : Port https://github.com/123456abcdef/cr-sc-dump to C#
+ * 
+ * TODO :
+ * [-] Reverse Code for Edit _tex.sc files
+ * [-] Fix TODO #1
+ */
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+//using System.Text;
+//using System.Threading.Tasks;
 using System.IO;
 using System.Drawing.Imaging;
 using System.Drawing;
 using System.Diagnostics;
 
+/*
+ * How to use :
+ * after compile, but .exe to empty folder and run
+ * program generates two folder named as 'input' and 'output'
+ * open clash royal apk file with WinRAR or 7Zip, goto assets\sc folder and pickup any _tex.sc files
+ * put _tex.sc files to input folder and run .exe
+ * wait a minute
+ * open output folder
+ * DONE!!!
+ */
+
 namespace dumpsc
 {
     class Program
     {
+        public const string InputFolder = "input";
+        public const string OutputFolder = "output";
+
         static void Main(string[] args)
         {
-            Directory.CreateDirectory("input");
-            Directory.CreateDirectory("output");
+            // create input and output directories
+            Directory.CreateDirectory(InputFolder);
+            Directory.CreateDirectory(OutputFolder);
 
             long elapsedMilliseconds = 0;
 
-            foreach (string fileName in Directory.GetFiles("input"))
+            // for each file in input folder
+            foreach (string fileName in Directory.GetFiles(InputFolder))
             {
+                // create stop for calculate execution time
                 Stopwatch watch = Stopwatch.StartNew();
                 watch.Start();
 
                 Console.WriteLine("Processing {0}", fileName);
                 Console.WriteLine("\tDecompressing...");
-                byte[] decodedBytes = Decompress(fileName);
+                byte[] decodedBytes = Decompress(fileName); // load and decompress file
 
                 Console.WriteLine("\tDecoding...");
                 Bitmap[] images = Decode(decodedBytes);
 
                 Console.WriteLine("\tSaving Images...");
 
-                string savePath = @"output\" + Path.GetFileNameWithoutExtension(fileName) + @"\";
+                string savePath = string.Format("{0}\\{1}", OutputFolder, Path.GetFileNameWithoutExtension(fileName));
 
                 Directory.CreateDirectory(savePath);
 
                 for (int i = 0; i < images.Length; i++)
                 {
-                    using(FileStream fileStream = new FileStream(savePath + i.ToString() + ".png", FileMode.Create))
+                    using (FileStream fileStream = new FileStream(string.Format("\\{0}.png", savePath, i), FileMode.Create))
                     {
+                        // save bitmap with png image format to file
                         images[i].Save(fileStream, ImageFormat.Png);
                     }    
                 }
@@ -52,11 +81,13 @@ namespace dumpsc
             }
 
             Console.WriteLine("\nFinished in {0}ms", elapsedMilliseconds);
+            Console.WriteLine("Press any key to close...");
             Console.ReadKey();
         }
 
         public static Bitmap[] Decode(byte[] decodedBytes)
         {
+            // textures in sc files
             List<Bitmap> images = new List<Bitmap>();
 
             using (MemoryStream memory = new MemoryStream(decodedBytes))
@@ -64,6 +95,7 @@ namespace dumpsc
             {
                 while (memory.Length - memory.Position > 5)
                 {
+                    // read sc header
                     SCHeader scHeader = ReadSCHeader(binaryReader);
 
                     Console.WriteLine("\t FileType: {0}, FileSize: {1}, SubType: {2}, Width: {3}, Height: {4}",
@@ -87,7 +119,10 @@ namespace dumpsc
                             throw new Exception("Unknown pixel type " + scHeader.SubType.ToString());
                     }
 
+                    // create bitmap image using width and height from sc header
                     Bitmap bmp = new Bitmap(scHeader.Width, scHeader.Height, PixelFormat.Format32bppArgb);
+
+                    // we should lock bitmap ? 
 
                     List<Color> pixels = new List<Color>();
 
@@ -95,13 +130,18 @@ namespace dumpsc
                     {
                         for (int y = 0; y < bmp.Height; y++)
                         {
+                            // get pixel from bytes
                             Color pixel = ConvertToPixelColor(binaryReader.ReadBytes(pixelSize), scHeader.SubType);
+
+                            // add it to list
                             pixels.Add(pixel);
+
+                            // and set it to bitmap
                             bmp.SetPixel(x, y, pixel);
                         }
                     }
 
-                    
+                    // from this part all of codes just converted to csharp with comments                    
                     if(scHeader.FileType == 27 || scHeader.FileType == 28)
                     {
                         int iSrcPix = 0;
@@ -147,7 +187,7 @@ namespace dumpsc
                         }
 
                         // line end blocks
-                       /* for (int j = 0; j < (scHeader.Height % 32); j++)
+                       /* for (int j = 0; j < (scHeader.Height % 32); j++) // TODO #1 we got error here about at runtime, i will working on it
                         {
                             for (int h = 0; h < (scHeader.Width & 32); h++)
                             {
@@ -167,7 +207,7 @@ namespace dumpsc
 
         public static byte[] Decompress(string filePath)
         {
-            // read file bytes, then skep 26 bytes (idk why)
+            // read file bytes, then skip first 26 bytes (idk why)
             byte[] fileBytes = File.ReadAllBytes(filePath).Skip(26).ToArray();
 
             byte[] decompressed;
@@ -191,6 +231,7 @@ namespace dumpsc
             return decompressed;
         }
 
+        // just for saving time :D
         public static SCHeader ReadSCHeader(BinaryReader reader)
         {
             return new SCHeader
@@ -207,7 +248,7 @@ namespace dumpsc
         {
             ushort pix;
 
-            switch (subType)
+            switch (subType) // this part just converted to csharp
             {
                 case 0: // RGB8888
                     return Color.FromArgb((int)BitConverter.ToUInt32(pixel, 0));
@@ -229,12 +270,12 @@ namespace dumpsc
         }
     }
 
-    public struct SCHeader
+    public class SCHeader
     {
-        public byte FileType;
-        public uint FileSize;
-        public byte SubType;
-        public ushort Width;
-        public ushort Height;
+        public byte FileType { get; set; }
+        public uint FileSize { get; set; }
+        public byte SubType { get; set; }
+        public ushort Width { get; set; }
+        public ushort Height { get; set; }
     }
 }
