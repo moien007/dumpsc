@@ -250,18 +250,18 @@ namespace dumpsc
 
             switch (subType) // this part just converted to csharp
             {
-                case 0: // RGB8888
+                case 0: // RGBA8888
                     return Color.FromArgb((int)BitConverter.ToUInt32(pixel, 0));
-                case 2: // RGB4444
+                case 2: // RGBA4444
                     pix = BitConverter.ToUInt16(pixel, 0);
                     return Color.FromArgb(((pix >> 12) & 0xF) << 4, ((pix >> 8) & 0xF) << 4, ((pix >> 4) & 0xF) << 4, ((pix >> 0) & 0xF) << 4);
                 case 4: // RGB565
                     pix = BitConverter.ToUInt16(pixel, 0);
                     return Color.FromArgb(((pix >> 11) & 0x1F) << 3, ((pix >> 5) & 0x3F) << 2, (pix & 0x1F) << 3);
-                case 6: // RGB555?
+                case 6: // LA88
                     pix = BitConverter.ToUInt16(pixel, 0);
-                    return Color.FromArgb((pix >> 16) & 0x80, (pix >> 9) & 0x7C, (pix >> 6) & 0x3E, (pix >> 3) & 0x1F);
-                case 10: //BGR233?
+                    return Color.FromArgb((pix >> 8), (pix >> 8), (pix >> 8), (pix & 0xFF));
+                case 10: // BGR233? NO
                     pix = pixel.FirstOrDefault();
                     return Color.FromArgb((pix) & 0x3, ((pix >> 2) & 0x7) << 2, ((pix >> 5) & 0x7) << 5);
             }
