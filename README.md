@@ -3,6 +3,11 @@ Port of https://github.com/123456abcdef/cr-sc-dump in CSharp.
 
 Extract Images From '_tex.sc' Files
 
+**IMPORTANT: THIS TOOL IS NOT WORKING ANYMORE FOR NEW COC VERSION, SADLY I DON'T REMIND THE SUPPORTED VERSION OF COC BY THIS TOOL :(**
+
+
+**IMPORTANT2: MY BAD ENGLISH SKILLS MAY CAUSE EYE CANCER :D**
+
 ## How to use 
  * After compile, put .exe to empty folder and run
  * Program generates two folder named as 'input' and 'output'
