@@ -63,8 +63,6 @@ namespace dumpsc
 
                 string savePath = string.Format("{0}\\{1}", OutputFolder, Path.GetFileNameWithoutExtension(fileName));
 
-                Directory.CreateDirectory(savePath);
-
                 for (int i = 0; i < images.Length; i++)
                 {
                     using (FileStream fileStream = new FileStream(string.Format("\\{0}.png", savePath, i), FileMode.Create))
